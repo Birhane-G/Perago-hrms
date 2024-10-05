@@ -3,6 +3,7 @@ import { RoleDto } from '../dto/role.dto';
 import { UserService } from '../services/user.service';
 import { UserDto } from '../dto/user.dto';
 import { AdminRoleGuard } from 'src/config/guard/admin.guard';
+import { JwtAuthGuard } from 'src/config/guard/jwt.auth.guard';
 
 @Controller('user')
 export class UserController {
@@ -20,6 +21,8 @@ export class UserController {
    * @param userDto The user DTO data.
    * @returns The newly created user object.
    */
+
+  @UseGuards(JwtAuthGuard, AdminRoleGuard)
   @Post('createuser')
   async createUser(@Body() userDto: UserDto) {
     return await this.userService.createUser(userDto);

@@ -26,9 +26,8 @@ export class DepartmentService {
       parentDepartment = await this.departmentRepository.findOne({
         where: { department_id: createDepartmentDto.parentId },
       });
-      if (!parentDepartment) {
+      if (!parentDepartment)
         throw new NotFoundException('Parent department not found');
-      }
     }
     const department = this.departmentRepository.create({
       ...createDepartmentDto,
@@ -54,7 +53,7 @@ export class DepartmentService {
         childDepartments: [],
       });
     });
-    const hierarchy: Department[] = [];
+    const Tree: Department[] = [];
     departmentMap.forEach((department) => {
       if (department.parentDepartment) {
         const parent = departmentMap.get(
@@ -64,9 +63,9 @@ export class DepartmentService {
           parent.childDepartments.push(department);
         }
       } else {
-        hierarchy.push(department);
+        Tree.push(department);
       }
     });
-    return hierarchy;
+    return Tree;
   }
 }

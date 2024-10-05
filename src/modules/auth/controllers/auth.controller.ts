@@ -1,16 +1,5 @@
-import {
-  Body,
-  Controller,
-  Get,
-  HttpCode,
-  HttpStatus,
-  Post,
-  Request,
-  Res,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Post, Request, Res, UseGuards } from '@nestjs/common';
 import { AuthService } from '../services/auth.service';
-import { SignUpDto } from '../dto/signup.dto';
 import { Response } from 'express';
 import { JwtService } from '@nestjs/jwt';
 import { LocalAuthGuard } from 'src/config/guard/local-auth.gurad';
@@ -27,11 +16,11 @@ export class AuthController {
    *  @param signUpDto The user signup data.
    *  @returns The response from the authentication service.
    */
-  @HttpCode(HttpStatus.OK)
-  @Post('signup')
-  async signup(@Body() signUpDto: SignUpDto) {
-    return await this.authService.register(signUpDto);
-  }
+  // @HttpCode(HttpStatus.OK)
+  // @Post('signup')
+  // async signup(@Body() signUpDto: SignUpDto) {
+  //   return await this.authService.register(signUpDto);
+  // }
   /**
    * Handles user login requests.
    * @param loginDto The user login DTO data.

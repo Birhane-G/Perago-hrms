@@ -30,7 +30,10 @@ export class UserService {
    *  @returns The `user` object if found, otherwise `null`.
    */
   async checkEmail(email: any): Promise<User | null> {
-    return await this.userRepository.findOne({ where: { email } });
+    return await this.userRepository.findOne({
+      where: { email },
+      relations: ['UserRole'],
+    });
   }
   /**
    *  Checks if a username with the given username exists.
@@ -63,9 +66,10 @@ export class UserService {
    * Retrieves one User by user_id.
    * @returns An array of `user` objects, or null if no user are found.
    */
-  async findUserById(user_id: any): Promise<User | null> {
+  async findUserById(user_id: number): Promise<User | null> {
     const user = await this.userRepository.findOne({
       where: { user_id },
+      relations: ['UserRole'],
     });
     // if (!user) {
     //   return { user: null, rolename: null };
@@ -79,7 +83,7 @@ export class UserService {
    * @param signUpDto The user signup DTO data.
    * @returns The newly created user object, excluding the password.
    */
-  async signUp(signUpDto: SignUpDto): Promise<User | null> {
+  async signUp(signUpDto: SignUpDto, userRole: UserRole): Promise<User | null> {
     const { email, username } = signUpDto;
     if (await this.checkEmail(email))
       throw new BadRequestException('Email already in use');
@@ -89,7 +93,7 @@ export class UserService {
     const user = this.userRepository.create({
       ...signUpDto,
       password: hashedpassword,
-      UserRole: signUpDto?.role_id,
+      UserRole: userRole,
     });
     await this.userRepository.insert(user);
     delete user.password;
@@ -104,16 +108,17 @@ export class UserService {
     userDto: UserDto,
   ): Promise<{ user: User | null; userDetail: UserDetail | null }> {
     const { username, email, password, role_id, ...userdetail } = userDto;
-    const userRole = await this.roleRepository.findOne({
-      where: { role_id: role_id },
+    const role = await this.roleRepository.findOne({
+      where: { role_id },
     });
-    if (!userRole) throw new NotFoundException('Role not found');
-    const user = await this.signUp({ username, email, password, role_id });
-    const user_id = user.user_id;
-    const userDetail = await this.createUserDetail({
-      ...userdetail,
-      user_id,
-    });
+    if (!role) throw new NotFoundException('Role not found');
+    const user = await this.signUp({ username, email, password }, role);
+    const userDetail = await this.createUserDetail(
+      {
+        ...userdetail,
+      },
+      user,
+    );
     return { user, userDetail };
   }
 
@@ -122,10 +127,10 @@ export class UserService {
    * @param userDetailDto The userDetail DTO data.
    * @returns The newly created UserDetail object.
    */
-  async createUserDetail(userDetailDto: UserDetailDto) {
+  async createUserDetail(userDetailDto: UserDetailDto, user: User) {
     const userDetail = this.userDetailRepository.create({
       ...userDetailDto,
-      user: userDetailDto.user_id,
+      user: user,
     });
     await this.userDetailRepository.insert(userDetail);
     return userDetail;

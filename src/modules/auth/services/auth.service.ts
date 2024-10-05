@@ -1,6 +1,6 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { User } from 'src/entities/user.entity';
-import { SignUpDto } from '../dto/signup.dto';
+// import { SignUpDto } from '../dto/signup.dto';
 import { UserService } from 'src/modules/user/services/user.service';
 import { LoginDto } from '../dto/login.dto';
 import * as bcrypt from 'bcrypt';
@@ -19,9 +19,9 @@ export class AuthService {
    * @throws BadRequestException If email or username is already in use.
    *
    */
-  async register(signUpDto: SignUpDto): Promise<User> {
-    return await this.userService.signUp(signUpDto);
-  }
+  // async register(signUpDto: SignUpDto): Promise<User> {
+  //   return await this.userService.signUp(signUpDto);
+  // }
 
   /**
    * Logs in a user and returns a JWT token.

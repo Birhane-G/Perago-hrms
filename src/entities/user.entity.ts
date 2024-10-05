@@ -41,8 +41,8 @@ export class User {
   userDetails: UserDetail;
 
   @ManyToOne(() => UserRole, (UserRole) => UserRole.users)
-  @JoinColumn({ name: 'role_id' })
-  UserRole: number;
+  @JoinColumn({ name: 'userRole' })
+  UserRole: UserRole;
 
   @OneToMany(() => Department, (Department) => Department.createdBy)
   Department: Department[];
