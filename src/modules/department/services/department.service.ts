@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Department } from 'src/entities/department.entity';
 import { Repository } from 'typeorm';
@@ -11,34 +11,30 @@ export class DepartmentService {
     @InjectRepository(Department)
     private readonly departmentRepository: Repository<Department>,
   ) {}
-
   async getRootDepartments(): Promise<Department[]> {
     return this.departmentRepository.find({
       where: { parentDepartment: null },
       relations: ['childDepartments'],
     });
   }
-
   async createDepartment(
     createDepartmentDto: CreateDepartmentDto,
     user: User,
-  ): Promise<Department> {
-    const { name, parentId } = createDepartmentDto;
-
-    const department = new Department();
-    department.name = name;
-    department.createdBy = user;
-
-    if (parentId) {
-      const parentDepartment = await this.departmentRepository.findOne({
-        where: { department_id: parentId },
+  ): Promise<any> {
+    let parentDepartment = null;
+    if (createDepartmentDto.parentId) {
+      parentDepartment = await this.departmentRepository.findOne({
+        where: { department_id: createDepartmentDto.parentId },
       });
-      if (parentDepartment) {
-        department.parentDepartment = parentDepartment;
-      } else {
-        throw new Error('Parent department not found');
+      if (!parentDepartment) {
+        throw new NotFoundException('Parent department not found');
       }
     }
+    const department = this.departmentRepository.create({
+      ...createDepartmentDto,
+      createdBy: user,
+      parentDepartment: parentDepartment,
+    });
     return await this.departmentRepository.save(department);
   }
 
@@ -49,9 +45,8 @@ export class DepartmentService {
   }
   async buildHierarchy(): Promise<Department[]> {
     const departments = await this.departmentRepository.find({
-      relations: ['childDepartments'],
+      relations: ['childDepartments', 'parentDepartment'],
     });
-    // Create a map to hold the hierarchy
     const departmentMap = new Map<number, Department>();
     departments.forEach((department) => {
       departmentMap.set(department.department_id, {
@@ -59,8 +54,6 @@ export class DepartmentService {
         childDepartments: [],
       });
     });
-
-    // Build the hierarchy
     const hierarchy: Department[] = [];
     departmentMap.forEach((department) => {
       if (department.parentDepartment) {
@@ -74,7 +67,6 @@ export class DepartmentService {
         hierarchy.push(department);
       }
     });
-
     return hierarchy;
   }
 }

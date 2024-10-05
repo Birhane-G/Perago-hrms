@@ -1,9 +1,16 @@
-import { Body, Controller, Get, Post, Req } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Request,
+  UseGuards,
+} from '@nestjs/common';
 import { DepartmentService } from '../services/department.service';
 import { Department } from 'src/entities/department.entity';
 import { CreateDepartmentDto } from '../dto/createdepatment.dto';
-import { Request } from 'express';
 import { User } from 'src/entities/user.entity';
+import { JwtAuthGuard } from 'src/config/guard/jwt.auth.guard';
 
 @Controller('department')
 export class DepartmentController {
@@ -15,11 +22,12 @@ export class DepartmentController {
     return rootDepartments;
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post()
   async createDepartment(
     @Body() createDepartmentDto: CreateDepartmentDto,
-    @Req() request: Request,
-  ): Promise<Department> {
+    @Request() request,
+  ): Promise<any> {
     const user = request.user as User;
     return this.departmentService.createDepartment(createDepartmentDto, user);
   }
