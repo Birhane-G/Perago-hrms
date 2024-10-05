@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/entities/user.entity';
 import { SignUpDto } from 'src/modules/auth/dto/signup.dto';
@@ -9,6 +13,7 @@ import { RoleDto } from '../dto/role.dto';
 import { UserDto } from '../dto/user.dto';
 import { UserDetailDto } from '../dto/userdetail.dto';
 import { UserDetail } from 'src/entities/userdetail.entity';
+
 @Injectable()
 export class UserService {
   constructor(
@@ -48,7 +53,26 @@ export class UserService {
    * @returns An array of `users` objects, or null if no users are found.
    */
   async findAllUsers(): Promise<User[] | null> {
-    return await this.userRepository.find();
+    return await this.userRepository.find({
+      relations: {
+        // UserRole: true,
+      },
+    });
+  }
+  /**
+   * Retrieves one User by user_id.
+   * @returns An array of `user` objects, or null if no user are found.
+   */
+  async findUserById(user_id: any): Promise<User | null> {
+    const user = await this.userRepository.findOne({
+      where: { user_id },
+    });
+    // if (!user) {
+    //   return { user: null, rolename: null };
+    // }
+    // const rolename = user.UserRole ? user.UserRole.name : null;
+    // return { user, rolename };
+    return user;
   }
   /**
    * Creates a new user.
@@ -61,41 +85,47 @@ export class UserService {
       throw new BadRequestException('Email already in use');
     if (await this.checkUserName(username))
       throw new BadRequestException('username already in use');
-
     const hashedpassword = await bcrypt.hash(signUpDto.password, 12);
-
     const user = this.userRepository.create({
       ...signUpDto,
       password: hashedpassword,
+      UserRole: signUpDto?.role_id,
     });
     await this.userRepository.insert(user);
     delete user.password;
     return user;
   }
   /**
-   * Creates a new User.
+   * Creates a new User and userDetail.
    * @param roleDto The role DTO data.
-   * @returns The newly created role object.
+   * @returns The newly created user and userdetail object.
    */
-  async createUser(userDto: UserDto) {
-    const { username, email, password, ...userdetail } = userDto;
-    const user = await this.signUp({ username, email, password });
+  async createUser(
+    userDto: UserDto,
+  ): Promise<{ user: User | null; userDetail: UserDetail | null }> {
+    const { username, email, password, role_id, ...userdetail } = userDto;
+    const userRole = await this.roleRepository.findOne({
+      where: { role_id: role_id },
+    });
+    if (!userRole) throw new NotFoundException('Role not found');
+    const user = await this.signUp({ username, email, password, role_id });
     const user_id = user.user_id;
     const userDetail = await this.createUserDetail({
       ...userdetail,
       user_id,
     });
-    // const user = await this.userRepository.create({ username, email, password });
-    return userDetail;
+    return { user, userDetail };
   }
+
   /**
-   * Creates a UserDeatail.
+   * Creates UserDeatail
    * @param userDetailDto The userDetail DTO data.
    * @returns The newly created UserDetail object.
    */
   async createUserDetail(userDetailDto: UserDetailDto) {
     const userDetail = this.userDetailRepository.create({
       ...userDetailDto,
+      user: userDetailDto.user_id,
     });
     await this.userDetailRepository.insert(userDetail);
     return userDetail;

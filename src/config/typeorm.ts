@@ -7,7 +7,7 @@ dotenvConfig({ path: '.env' });
 const config = {
   type: 'postgres',
   host: 'localhost',
-  port: parseInt(process.env.POSTGRES_PORT, 10),
+  port: parseInt(process.env.POSTGRES_PORT, 5432),
   username: 'postgres',
   password: '12345',
   database: 'perago',
@@ -15,6 +15,7 @@ const config = {
   migrations: ['src/database/migrations/*{.ts,.js}'],
   autoLoadEntities: true,
   synchronize: false,
+  logging: true,
 };
 
 export default registerAs('typeorm', () => config);

@@ -30,9 +30,6 @@ export class UserDetail {
   @Column()
   terminationdate: Date;
 
-  @Column({ select: false })
-  password: string;
-
   @CreateDateColumn()
   created_on: Date;
 
@@ -44,5 +41,5 @@ export class UserDetail {
 
   @OneToOne(() => User, (user) => user.userDetails)
   @JoinColumn({ name: 'user_id' })
-  user: User;
+  user: number;
 }

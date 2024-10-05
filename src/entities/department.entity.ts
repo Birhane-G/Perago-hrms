@@ -3,7 +3,6 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
-  JoinColumn,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -29,13 +28,13 @@ export class Department {
   deleted_on: Date;
 
   @ManyToOne(() => User, (User) => User.Department)
-  Users: User;
+  createdBy: User;
 
-  @ManyToOne(() => Department, (department) => department.childDepartments)
-  @JoinColumn({ name: 'patentdepartment_id' })
+  @ManyToOne(() => Department, (department) => department.childDepartments, {
+    nullable: true,
+  })
   parentDepartment: Department;
 
   @OneToMany(() => Department, (department) => department.parentDepartment)
-  @JoinColumn({ name: 'patentdepartment_id' })
   childDepartments: Department[];
 }

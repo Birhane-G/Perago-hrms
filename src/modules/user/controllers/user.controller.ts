@@ -1,7 +1,8 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { RoleDto } from '../dto/role.dto';
 import { UserService } from '../services/user.service';
 import { UserDto } from '../dto/user.dto';
+import { AdminRoleGuard } from 'src/config/guard/admin.guard';
 
 @Controller('user')
 export class UserController {

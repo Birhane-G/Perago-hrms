@@ -3,6 +3,7 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  JoinColumn,
   ManyToOne,
   OneToMany,
   OneToOne,
@@ -24,7 +25,7 @@ export class User {
   @Column({ unique: true, length: 100 })
   email: string;
 
-  @Column({ select: false })
+  @Column()
   password: string;
 
   @CreateDateColumn()
@@ -40,8 +41,9 @@ export class User {
   userDetails: UserDetail;
 
   @ManyToOne(() => UserRole, (UserRole) => UserRole.users)
-  UserRole: UserRole;
+  @JoinColumn({ name: 'role_id' })
+  UserRole: number;
 
-  @OneToMany(() => Department, (Department) => Department.Users)
+  @OneToMany(() => Department, (Department) => Department.createdBy)
   Department: Department[];
 }

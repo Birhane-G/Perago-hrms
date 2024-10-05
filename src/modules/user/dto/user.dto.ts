@@ -12,8 +12,8 @@ export class UserDto {
   @IsString()
   password: string;
 
-  @IsString()
   @IsNotEmpty()
+  @IsString()
   firstname: string;
 
   @IsString()
@@ -29,6 +29,7 @@ export class UserDto {
   @IsNotEmpty()
   terminationdate: Date;
 
+  @IsNotEmpty()
   @IsNumber()
-  userRoleRoleId: number;
+  role_id: number;
 }
